@@ -86,6 +86,9 @@ pairwise_dis <- function(gt_Mtx, diploid = TRUE){
 
 collapseGT <- function(vcf_gt){
   # collapses '0/0' to '0', '1/1' to '1'
+  if (is.na(vcf_gt)){
+  	return(NA)
+  }
   gt_vec <- unlist(strsplit(vcf_gt,'/'))
   if(gt_vec[1] != gt_vec[2]){
     print("CANNOT collapse heterozygous genotype to haplotype!")
