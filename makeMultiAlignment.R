@@ -14,14 +14,24 @@ vcf2MultiAlignFile <- function(inPath, refPath, outPath, fileType){
   ref <- read.FASTA(refPath)
   vcfFile <- read.vcfR(inPath)
   
-  # filter out heterozygous data
   gt <- extract.gt(vcfFile)
-  het_gt <- is_het(gt, na_is_false = FALSE)
+  tot_cnt <- nrow(gt)
+  # apply all filters
+  flt <- getFILTER(vcfFile)
+  passAll <- which(flt=="PASS")
+  vcfFile <- vcfFile[passAll]
+  pass_cnt <- length(passAll)
+  cat(pass_cnt, "sites out of", tot_cnt, "sites pass all filters applied.")
+
+  # get rid of heterozygous sites  
+  het_gt <- is_het(extract.gt(vcfFile), na_is_false = FALSE)
   het_sites <- apply(het_gt, 1, function(x) TRUE %in% x)
-  tot_cnt <- length(het_sites)
   het_cnt <- length(which(het_sites))
   vcfFile <- vcfFile[!het_sites]
-  cat(het_cnt, "heterozygous sites out of", tot_cnt, "polymorphic sites are filtered out.")
+  cat(het_cnt, "heterozygous sites out of", nrow(het_gt), "sites are discarded.")
+  # get rid of sites with missing data
+  vcfFile <- vcfFile[complete.cases(extract.gt(vcfFile))]
+  cat(nrow(extract.gt(vcfFile)), "sites remaining after sites with missing genotypes excluded.")
   
   sampleSeq <- vcfR2DNAbin(vcfFile, ref.seq = ref, unphased_as_NA = FALSE, extract.haps = FALSE, consensus = TRUE)
   seq_as_phyDat <- phyDat(sampleSeq)
