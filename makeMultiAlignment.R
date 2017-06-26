@@ -54,11 +54,12 @@ main <- function(arguments){
   syn2 <- f_ext!='.nex' & f_ext!='.phy'
   bad_syntax <- syn1 | syn2
   if(bad_syntax){
-    cat("Usage: $ ./makeNEXUS.R vcf_file ref_fasta out.ext")
-    cat("Output file extension can be either \'nex\' or \'phy\'")
-    return()
+    cat("Usage: $ ./makeNEXUS.R vcf_file ref_fasta out.ext", "\n")
+    cat("Output file extension can be either \'nex\' or \'phy\'", "\n")
+    return(-1)
   }
   vcf2MultiAlignFile(usr_args[1], usr_args[2], usr_args[3], f_ext)
+  return(0)
 }
 
 main(cmd_args)
