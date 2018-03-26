@@ -37,17 +37,27 @@ nl_fit <- function(dist_r2, sample_size){
 
 main <- function(arguments){
   
-  if(length(arguments) != 2){
-    cat("Usage: $ ./LD_reg.R in.geno.ld out.Rds", "\n")
+  inval1 = length(arguments) != 3
+  inval2 = arguments[1] != '-m' & arguments[1] != '-c'
+  inval = inval1 | inval2
+  if(inval){
+    cat("Usage: $ ./LD_reg.R [option] in.geno.ld out.Rds", "\n")
+    cat("[option]:", "\n")
+    cat("\t -m \t save fitted model and curve", "\n")
+    cat("\t -c \t save curve only", "\n")
     return(-1)
   }
 
-  intrachromLD <- read.table(arguments[1], header = TRUE, sep = "\t")
+  intrachromLD <- read.table(arguments[2], header = TRUE, sep = "\t")
   dist_LD <- formatData(intrachromLD)
   LD_fit <- nl_fit(dist_LD, max(intrachromLD$N_INDV))
 
-  saveRDS(LD_fit, file = arguments[2])
+  if (arguments[1] == '-c'){
+  	LD_fit[[1]] <- NULL
+  }
 
+  saveRDS(LD_fit, file = arguments[3])
+  
   return(0)
 }
 
