@@ -1,2 +1,2 @@
 # r_phylo_util
-Some utilities for phylogenetic analysis in R
+Some R and Python utilities for processing files in popgen analyses
