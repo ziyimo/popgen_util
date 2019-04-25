@@ -2,6 +2,10 @@
 
 library(dplyr)
 
+preamble <- '#!/bin/bash\n#$ -N discoal_sim\n#$ -S /bin/bash\n#$ -cwd\n#$ -j y\n#$ -l m_mem_free=32G\n\necho "_START_$(date)"\n\nNOREPL=50\n\nfor REPL in $(seq 1 $NOREPL); do\n'
+
+afterword <- 'done\n\necho "_EXITSTAT_$?"\necho "_END_$(date)"\n\nexit\n'
+
 psmc2discoal<-function(psmc_file,it=30,mu=2.5e-8,s=100,maxGBP=2e5){
   X<-scan(file=psmc_file,what="",sep="\n",quiet=TRUE)
   
@@ -41,9 +45,9 @@ psmc2discoal<-function(psmc_file,it=30,mu=2.5e-8,s=100,maxGBP=2e5){
   
   PopSizeChange <- paste(apply(gen_Ne, 1, function(x) paste(x, collapse = ' ')), collapse = ' ')
   
-  discoal_PATH <- "discoal/discoal"
+  discoal_PATH <- "\tdiscoal/discoal"
   sampSize <- 48
-  noRep <- 5000
+  noRep <- 1
   nSites <- 1e5
   theta <- 4*N_curr*mu*nSites #signif(4*N_curr*mu, 6)
   rho <- 4*N_curr*r*nSites #signif(4*N_curr*r, 4)
@@ -55,13 +59,17 @@ psmc2discoal<-function(psmc_file,it=30,mu=2.5e-8,s=100,maxGBP=2e5){
   AF_min <- 0.2
   AF_max <- 1
   
+  samp_a_cmd <- paste('\tZNS=$(python -c "import random;print(round(random.uniform(', alpha_min, ',', alpha_max, '), 1))")', sep='')
+  samp_f_cmd <- paste('\tPSFF=$(python -c "import random;print(round(random.uniform(', AF_min, ',', AF_max, '), 4))")', sep='')
+  echo_cmd <- paste('\techo "<insert sample ID>_${REPL}.discoal $(echo "$ZNS/(2*', N_curr, ')" | bc -l) ${PSFF}"', sep='')
+
   discoal_cmd <- paste(discoal_PATH, sampSize, noRep, format(nSites, scientific = FALSE),
         '-t', theta, '-r', rho, '-N', N_curr,
         '-ws', tau, '-x', 0.5, '-i', 4,
-        '-Pa', alpha_min, alpha_max, '-Pc', AF_min, AF_max,
-        PopSizeChange, '-T\n', sep = ' ')
+        '-a', '$ZNS', '-c', '$PSFF',
+        PopSizeChange, '-T > discoal_out/<insert sample ID>_${REPL}.discoal\n', sep = ' ')
   
-  return(discoal_cmd)
+  return(paste(samp_a_cmd, samp_f_cmd, echo_cmd, discoal_cmd, sep='\n'))
   
 }
 
@@ -74,7 +82,7 @@ main <- function(arguments){
   #usr_args <- tail(arguments, 3)
   usr_args <- arguments
   
-  cat(psmc2discoal(usr_args[1]))
+  cat(paste(preamble, psmc2discoal(usr_args[1]), afterword, sep=''))
   
   return(0)
 }
