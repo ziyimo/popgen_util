@@ -19,7 +19,7 @@ get_Ne_by_gen<-function(psmc_file,it=30,mu=2.5e-8,s=100,maxGBP=2e5){
   #write(TR,"temp.psmc.result")
   #theta0<-as.numeric(read.table("temp.psmc.result")[1,2])
   N0<-t_r[1]/4/mu/s
-  r = t_r[2]/(4*N0)
+  r = t_r[2]/(4*N0*s)
   
   write(RS,"temp.psmc.result")
   a<-read.table("temp.psmc.result")

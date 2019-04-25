@@ -45,8 +45,8 @@ psmc2discoal<-function(psmc_file,it=30,mu=2.5e-8,s=100,maxGBP=2e5){
   sampSize <- 48
   noRep <- 5000
   nSites <- 1e5
-  theta <- signif(4*N_curr*mu, 6)
-  rho <- signif(4*N_curr*r, 4)
+  theta <- 4*N_curr*mu*nSites #signif(4*N_curr*mu, 6)
+  rho <- 4*N_curr*r*nSites #signif(4*N_curr*r, 4)
   tau <- 0
   selcoef_min <- 0.05
   selcoef_max <- 0.15
