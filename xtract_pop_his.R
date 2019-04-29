@@ -4,7 +4,7 @@ library(dplyr)
 
 cmd_args <- commandArgs(trailingOnly = TRUE)
 
-get_Ne_by_gen<-function(psmc_file, scheme='argw',it=30,mu=2.5e-8,s=100,maxGBP=2e5){
+get_Ne_by_gen<-function(psmc_file, scheme='argw',it=30,mu=2.5e-8,s=100,maxGBP=2e5,scaling=1){
   X<-scan(file=psmc_file,what="",sep="\n",quiet=TRUE)
   
   START<-grep("^RD",X)
@@ -43,21 +43,21 @@ get_Ne_by_gen<-function(psmc_file, scheme='argw',it=30,mu=2.5e-8,s=100,maxGBP=2e
     dNe[1] <- Ne[1]
   }
   
-  gen_Ne <- cbind(goi, dNe)
+  gen_Ne <- cbind(round(goi/scaling), round(dNe/scaling))
   #data.frame(round(Generation),round(Ne))
-  return(list(c(mu, r), gen_Ne))
+  return(list(c(mu*scaling, r*scaling), gen_Ne))
 }
 
 main <- function(arguments){
 
-  if(length(arguments) != 3){
-    cat("Usage: $ ./xtract_pop_his.R <psmc_file> <out_file> <`argw` or `slim`>", "\n")
+  if(length(arguments) != 5){
+    cat("Usage: $ ./xtract_pop_his.R <psmc_file> <out_file> <`argw` or `slim`> <scaling> <max_gen>", "\n")
     return(-1)
   }
   #usr_args <- tail(arguments, 3)
   usr_args <- arguments
   
-  params <- get_Ne_by_gen(usr_args[1], usr_args[3])
+  params <- get_Ne_by_gen(usr_args[1], usr_args[3], scaling=strtoi(usr_args[4]), maxGBP=strtoi(usr_args[5]))
   write.table(params[[1]], file = usr_args[2], row.names = FALSE, col.names = FALSE)
   write.table(params[[2]], file = usr_args[2], append = TRUE, row.names = FALSE, col.names = FALSE)
   
